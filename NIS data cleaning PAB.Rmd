@@ -1,0 +1,113 @@
+---
+title: "nis_data_cleaning"
+author: "Megan Grondine"
+date: "7/10/2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+load("nis_relationships.Rdata")
+data = as.tibble(nis_relationships)
+```
+
+```{r dataLoad}
+library(tidyverse)
+library(magrittr)
+load("nis_relationships.Rdata")
+head(nis_relationships)
+names(nis_relationships)
+nis_relationships = as.tibble(nis_relationships)
+```
+
+```{r}
+data = nis_relationships %>%
+  slice(1:12694) %>%
+  select(c(2:3, 11:20))
+
+data %<>%
+  mutate(PA = case_when(
+                        PA_BIOPAR == "Yes" ~ "Parent",
+                        PA_STEP == "Yes" ~ "Step Parent",
+                        PA_ADOPT == "Yes" ~ "Parent",
+                        PA_FOSTER == "Yes" ~ "Foster Parent",
+                        PA_GRAND == "Yes" ~ "Grandparent",
+                        PA_GUARDIAN == "Yes" ~ "Guardian",
+                        PA_FRIEND == "Yes" ~ "Unrelated",
+                        !is.na(paothrel) & paothrel != "Not ascertained" ~ as.character(paothrel),
+                        !is.na(paothnonrel) & paothnonrel != "Not ascertained" ~ "Unrelated",
+                        TRUE ~ NA_character_
+                        )
+)
+```
+
+```{r}
+View(data.frame(new = data$PA, biopar = data$PA_BIOPAR,
+                adopt = data$PA_ADOPT,
+                foster = data$PA_FOSTER,
+                grand = data$PA_GRAND,
+                guardian = data$PA_GUARDIAN,
+                friend = data$PA_FRIEND,
+           other_relation = data$paothrel,
+           other_nonrelation = data$paothnonrel)
+     )
+```
+
+```{r}
+check = filter(data, !is.na(PA))
+View(data.frame(new = check$PA, relation = check$PA_BIOPAR,
+                other_relation = check$paothrel,
+                other_nonrelation = check$paothnonrel))
+
+# We can look at a table to make it easier to see
+
+table(check$nis_PA, check$other_relation)
+```
+
+### PERSON B #####
+
+```{r}
+data = nis_relationships %>%
+  slice(1:12694) %>%
+  select(c(4:5, 21:30))
+
+data %<>%
+  mutate(PB = case_when(
+                        PB_BIOPAR == "Yes" ~ "Parent",
+                        PB_STEP == "Yes" ~ "Step Parent",
+                        PB_ADOPT == "Yes" ~ "Parent",
+                        PB_FOSTER == "Yes" ~ "Foster Parent",
+                        PB_GRAND == "Yes" ~ "Grandparent",
+                        PB_GUARDIAN == "Yes" ~ "Guardian",
+                        PB_FRIEND == "Yes" ~ "Unrelated",
+                        !is.na(pbothrel) & pbothrel != "Not ascertained" ~ as.character(pbothrel),
+                        !is.na(pbothnonrel) & pbothnonrel != "Not ascertained" ~ "Unrelated",
+                        TRUE ~ NA_character_
+                        )
+)
+```
+
+```{r}
+View(data.frame(new = data$PB, biopar = data$PB_BIOPAR,
+                adopt = data$PB_ADOPT,
+                foster = data$PB_FOSTER,
+                grand = data$PB_GRAND,
+                guardian = data$PB_GUARDIAN,
+                friend = data$PB_FRIEND,
+           other_relation = data$pbothrel,
+           other_nonrelation = data$pbothnonrel)
+     )
+```
+
+```{r}
+check = filter(data, !is.na(PB))
+View(data.frame(new = check$PB, relation = check$PB_BIOPAR,
+                other_relation = check$pbothrel,
+                other_nonrelation = check$pbothnonrel))
+```
